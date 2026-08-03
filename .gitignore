@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+
+# Environment / secrets
+.env
+.venv/
+venv/
+
+# Local runtime data
+*.db
+*.db-journal
+snapshot.txt
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
