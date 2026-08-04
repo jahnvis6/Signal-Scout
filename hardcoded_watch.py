@@ -10,11 +10,17 @@ fires a webhook notification if the condition is met.
 Usage:
     python hardcoded_watch.py
 """
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+# notifier.py logs the real reason a webhook call fails, but without a
+# configured handler that log message is silently dropped. This makes it
+# show up in the terminal instead of just getting a generic "failed" print.
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 
 from signalscout.differ import diff_snapshots, matches_condition  # noqa: E402
 from signalscout.fetcher import FetchError, fetch_text  # noqa: E402
