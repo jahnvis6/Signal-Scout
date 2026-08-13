@@ -1,13 +1,4 @@
-"""
-Day 1: hardcoded fetch -> diff -> notify loop.
 
-No database, scheduler, or LLM yet. First run saves a baseline snapshot.
-Every run after that checks for KEYWORD in the new content and fires a
-webhook if found.
-
-Usage:
-    python hardcoded_watch.py
-"""
 import logging
 import sys
 from pathlib import Path
@@ -26,7 +17,7 @@ logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 
 URL = "https://news.ycombinator.com"
 KEYWORD = "Show HN"
-WEBHOOK_URL = "https://discord.com/api/webhooks/REPLACE/ME"
+WEBHOOK_URL = "https://webhook.site/49b913df-5fa6-4b19-a82f-28e9df9260f9"
 
 SNAPSHOT_FILE = Path(__file__).parent / "snapshot.txt"
 
