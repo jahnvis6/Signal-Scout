@@ -1,0 +1,65 @@
+import sys
+import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from signalscout.parser import ParseError, parse_watch_request
+
+
+def mock_response(text):
+    block = MagicMock()
+    block.type = "text"
+    block.text = text
+    response = MagicMock()
+    response.content = [block]
+    return response
+
+
+class TestParseWatchRequest(unittest.TestCase):
+    @patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key-for-testing"})
+    @patch("signalscout.parser.Anthropic")
+    def test_valid_response_parses_correctly(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = mock_response(
+            '{"name": "Internship watch", "condition_type": "keyword_appears", '
+            '"keyword": "SWE Intern", "similarity_threshold": null, "check_interval_minutes": 30}'
+        )
+        mock_anthropic_cls.return_value = mock_client
+
+        result = parse_watch_request("tell me when a new SWE Intern role posts")
+
+        self.assertEqual(result["name"], "Internship watch")
+        self.assertEqual(result["condition_type"], "keyword_appears")
+        self.assertEqual(result["keyword"], "SWE Intern")
+        self.assertEqual(result["check_interval_minutes"], 30)
+
+    @patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key-for-testing"})
+    @patch("signalscout.parser.Anthropic")
+    def test_invalid_json_raises_parse_error(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = mock_response("not json at all")
+        mock_anthropic_cls.return_value = mock_client
+
+        with self.assertRaises(ParseError):
+            parse_watch_request("watch this page")
+
+    @patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key-for-testing"})
+    @patch("signalscout.parser.Anthropic")
+    def test_missing_fields_raises_parse_error(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = mock_response('{"name": "Only a name"}')
+        mock_anthropic_cls.return_value = mock_client
+
+        with self.assertRaises(ParseError):
+            parse_watch_request("watch this page")
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_missing_api_key_raises_runtime_error(self):
+        with self.assertRaises(RuntimeError):
+            parse_watch_request("watch this page")
+
+
+if __name__ == "__main__":
+    unittest.main()
